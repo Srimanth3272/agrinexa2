@@ -6,5 +6,5 @@ router = DefaultRouter()
 router.register(r'shipments', ShipmentViewSet, basename='shipment')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('logistics/', include(router.urls)),
 ]

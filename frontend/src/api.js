@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // Create axios instance
 const api = axios.create({
@@ -53,5 +53,27 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// AI Assistant API functions
+export const aiAPI = {
+    getPriceRecommendation: (listingData, provider = null) => {
+        const url = provider ? `/ai/price-recommendation/?provider=${provider}` : '/ai/price-recommendation/';
+        return api.post(url, listingData);
+    },
+    analyzeBid: (bidId, provider = null) => {
+        const url = provider ? `/ai/analyze-bid/${bidId}/?provider=${provider}` : `/ai/analyze-bid/${bidId}/`;
+        return api.post(url);
+    },
+    getMarketInsights: (cropVariety, state = '', provider = null) => {
+        const params = new URLSearchParams({ crop_variety: cropVariety });
+        if (state) params.append('state', state);
+        if (provider) params.append('provider', provider);
+        return api.get(`/ai/market-insights/?${params}`);
+    },
+    getNegotiationTips: (listingId, provider = null) => {
+        const url = provider ? `/ai/negotiation-tips/${listingId}/?provider=${provider}` : `/ai/negotiation-tips/${listingId}/`;
+        return api.get(url);
+    }
+};
 
 export default api;

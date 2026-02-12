@@ -1,0 +1,14 @@
+__pycache__
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+staticfiles/
+media/
+db.sqlite3
+.git
+.gitignore
+.dockerignore
+Dockerfile

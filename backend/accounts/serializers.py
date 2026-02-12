@@ -67,5 +67,24 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    role = serializers.ChoiceField(choices=['FARMER', 'BUYER'], required=True)
+    username = serializers.CharField(required=False, allow_blank=True)
+    gst_number = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True)
+    
+    def validate(self, data):
+        role = data.get('role')
+        username = data.get('username')
+        gst_number = data.get('gst_number')
+        
+        if role == 'FARMER' and not username:
+            raise serializers.ValidationError({
+                "username": "Username is required for farmer login"
+            })
+        
+        if role == 'BUYER' and not gst_number:
+            raise serializers.ValidationError({
+                "gst_number": "GST number is required for buyer login"
+            })
+        
+        return data

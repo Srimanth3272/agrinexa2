@@ -1,0 +1,30 @@
+mutation CreateSeedData @transaction @auth(level: USER, insecureReason: "This mutation is used to seed the database with example data and is safe for logged-in users to execute during development.") {
+  product_insertMany(data: [
+    {
+      id: "prod-123",
+      name: "Super Widget",
+      description: "A very useful gadget.",
+      price: 19.99,
+      inStock: true
+    },
+    {
+      id: "prod-456",
+      name: "Mega Gizmo",
+      description: "An essential tool for every home.",
+      price: 49.99,
+      inStock: false
+    }
+  ])
+  account_insertMany(data: [
+    {
+      id: "acc-789",
+      username: "seeduser1",
+      email: "seeduser1@example.com"
+    },
+    {
+      id: "acc-101",
+      username: "seeduser2",
+      email: "seeduser2@example.com"
+    }
+  ])
+}

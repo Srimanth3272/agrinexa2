@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import EscrowTransaction
 from market.serializers import OrderSerializer
+from market.models import Order
 from accounts.serializers import UserSerializer
 
 
@@ -8,7 +9,7 @@ class EscrowTransactionSerializer(serializers.ModelSerializer):
     order = OrderSerializer(read_only=True)
     user = UserSerializer(read_only=True)
     order_id = serializers.PrimaryKeyRelatedField(
-        queryset=EscrowTransaction.objects.all(),
+        queryset=Order.objects.all(),
         source='order',
         write_only=True
     )

@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from .models import Shipment
 from market.serializers import OrderSerializer
+from market.models import Order
 
 
 class ShipmentSerializer(serializers.ModelSerializer):
     order = OrderSerializer(read_only=True)
     order_id = serializers.PrimaryKeyRelatedField(
-        queryset=Shipment.objects.all(),
+        queryset=Order.objects.all(),
         source='order',
         write_only=True
     )

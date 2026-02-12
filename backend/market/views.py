@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
+from django.apps import apps
 from .models import CropListing, Bid, Order
 from .serializers import CropListingSerializer, BidSerializer, OrderSerializer
 
@@ -109,6 +110,14 @@ class BidViewSet(viewsets.ModelViewSet):
             farmer=bid.listing.farmer,
             bid=bid,
             final_amount=bid.total_amount
+        )
+        
+        # Create shipment (auto-create for MVP)
+        from datetime import timedelta
+        Shipment = apps.get_model('logistics', 'Shipment')
+        Shipment.objects.create(
+            order=order,
+            pickup_date=timezone.now().date() + timedelta(days=3)
         )
         
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)

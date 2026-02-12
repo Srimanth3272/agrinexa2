@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from './api';
 
 export default function Login() {
+    const [role, setRole] = useState('FARMER');
     const [username, setUsername] = useState('');
+    const [gstNumber, setGstNumber] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,7 +17,13 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/login/', { username, password });
+            const loginData = {
+                role,
+                password,
+                ...(role === 'FARMER' ? { username } : { gst_number: gstNumber })
+            };
+
+            const response = await api.post('/auth/login/', loginData);
             const { user, tokens } = response.data;
 
             // Store user data and tokens
@@ -83,24 +91,96 @@ export default function Login() {
                     )}
 
                     <form onSubmit={handleSubmit}>
+                        {/* Role Selector */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#878787',
+                                marginBottom: '8px'
+                            }}>
+                                Login As
+                            </label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('FARMER')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        border: role === 'FARMER' ? '2px solid #2874f0' : '1px solid #e0e0e0',
+                                        borderRadius: '2px',
+                                        backgroundColor: role === 'FARMER' ? '#e7f3ff' : '#fff',
+                                        color: role === 'FARMER' ? '#2874f0' : '#878787',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    🌾 Farmer
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('BUYER')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        border: role === 'BUYER' ? '2px solid #2874f0' : '1px solid #e0e0e0',
+                                        borderRadius: '2px',
+                                        backgroundColor: role === 'BUYER' ? '#e7f3ff' : '#fff',
+                                        color: role === 'BUYER' ? '#2874f0' : '#878787',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    🏭 Buyer
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Conditional Credential Input */}
                         <div style={{ marginBottom: '20px' }}>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Enter Username"
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '12px 16px',
-                                    fontSize: '14px',
-                                    border: '1px solid #e0e0e0',
-                                    borderRadius: '2px',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#2874f0'}
-                                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-                            />
+                            {role === 'FARMER' ? (
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter Username"
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        fontSize: '14px',
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: '2px',
+                                        outline: 'none'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = '#2874f0'}
+                                    onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+                                />
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={gstNumber}
+                                    onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                                    placeholder="Enter GST Number"
+                                    required
+                                    maxLength={15}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        fontSize: '14px',
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: '2px',
+                                        outline: 'none',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = '#2874f0'}
+                                    onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+                                />
+                            )}
                         </div>
 
                         <div style={{ marginBottom: '24px' }}>
@@ -170,10 +250,10 @@ export default function Login() {
                             🔑 Test Credentials:
                         </p>
                         <p style={{ fontSize: '11px', color: '#558b2f', marginBottom: '4px' }}>
-                            Farmer: <strong>farmer1</strong> / farmer123
+                            Farmer: Username <strong>farmer1</strong> / Password: farmer123
                         </p>
                         <p style={{ fontSize: '11px', color: '#558b2f' }}>
-                            Buyer: <strong>buyer1</strong> / buyer123
+                            Buyer: GST Number <strong>GST1234567890</strong> / Password: buyer123
                         </p>
                     </div>
                 </div>

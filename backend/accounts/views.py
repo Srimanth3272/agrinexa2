@@ -43,14 +43,37 @@ class LoginView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        user = authenticate(
-            username=serializer.validated_data['username'],
-            password=serializer.validated_data['password']
-        )
+        role = serializer.validated_data['role']
+        password = serializer.validated_data['password']
+        
+        # For buyers, authenticate using GST number
+        if role == 'BUYER':
+            gst_number = serializer.validated_data.get('gst_number')
+            try:
+                buyer_profile = BuyerProfile.objects.get(gst_number=gst_number)
+                username = buyer_profile.user.username
+            except BuyerProfile.DoesNotExist:
+                return Response(
+                    {'error': 'Invalid GST number or password'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        else:
+            # For farmers, use username directly
+            username = serializer.validated_data.get('username')
+        
+        # Authenticate the user
+        user = authenticate(username=username, password=password)
         
         if not user:
             return Response(
                 {'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Verify role matches
+        if user.role != role:
+            return Response(
+                {'error': f'This account is not registered as a {role.lower()}'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         

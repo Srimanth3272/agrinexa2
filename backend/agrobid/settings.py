@@ -27,7 +27,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure--laov)z6zgn(4%ymh=*(o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+if not DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -52,10 +55,12 @@ INSTALLED_APPS = [
     'market',
     'logistics',
     'finance',
+    'ai_assistant',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.middleware.common.CommonMiddleware',
@@ -145,6 +150,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -191,3 +198,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
+
+# AI Configuration - Gemini API
+GEMINI_API_KEY = config('GEMINI_API_KEY', default=None)
+
+# AI Configuration - Claude API
+CLAUDE_API_KEY = config('CLAUDE_API_KEY', default=None)
+
+# Default AI Provider: 'gemini', 'claude', or 'both'
+DEFAULT_AI_PROVIDER = config('AI_PROVIDER', default='gemini')

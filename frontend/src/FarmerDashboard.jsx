@@ -9,6 +9,9 @@ export default function FarmerDashboard() {
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+    const [viewingBids, setViewingBids] = useState(null);
+    const [bids, setBids] = useState([]);
+
     useEffect(() => {
         loadListings();
     }, []);
@@ -21,6 +24,32 @@ export default function FarmerDashboard() {
         } catch (error) {
             console.error('Error loading listings:', error);
             setLoading(false);
+        }
+    };
+
+    const fetchBids = async (listingId) => {
+        setViewingBids(listingId);
+        try {
+            const response = await api.get(`/bids/?listing=${listingId}`);
+            setBids(response.data.results || response.data);
+        } catch (error) {
+            console.error('Error fetching bids:', error);
+            alert('Failed to load bids');
+        }
+    };
+
+    const handleAcceptBid = async (bidId) => {
+        if (!window.confirm('Are you sure you want to accept this bid? This will close the listing and reject other bids.')) {
+            return;
+        }
+        try {
+            await api.post(`/bids/${bidId}/accept/`);
+            alert('Bid accepted successfully! Order created.');
+            setViewingBids(null);
+            loadListings(); // Reload listings to update status
+        } catch (error) {
+            console.error('Error accepting bid:', error);
+            alert('Failed to accept bid');
         }
     };
 
@@ -42,7 +71,61 @@ export default function FarmerDashboard() {
                         <h1 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', fontStyle: 'italic' }}>AgroBid</h1>
                         <p style={{ color: '#fff', fontSize: '11px', marginTop: '2px', opacity: 0.9 }}>Farmer Dashboard</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <button
+                            onClick={() => navigate('/finance')}
+                            style={{
+                                backgroundColor: '#388e3c',
+                                color: '#fff',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            💰 Finance
+                        </button>
+                        <button
+                            onClick={() => navigate('/logistics')}
+                            style={{
+                                backgroundColor: '#009688',
+                                color: '#fff',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            🚚 Logistics
+                        </button>
+                        <button
+                            onClick={() => navigate('/farmer/create-listing')}
+                            style={{
+                                backgroundColor: '#ff9800',
+                                color: '#fff',
+                                padding: '8px 20px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            ➕ Create New Listing
+                        </button>
                         <span style={{ color: '#fff', fontSize: '14px' }}>👤 {user?.first_name || user?.username}</span>
                         <button
                             onClick={handleLogout}
@@ -101,7 +184,22 @@ export default function FarmerDashboard() {
                     <div style={{ backgroundColor: '#fff', padding: '48px', textAlign: 'center', borderRadius: '2px', boxShadow: '0 1px 2px rgba(0,0,0,.1)' }}>
                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌾</div>
                         <p style={{ fontSize: '16px', color: '#212121', marginBottom: '8px' }}>No listings yet</p>
-                        <p style={{ fontSize: '14px', color: '#878787' }}>Your crop listings will appear here</p>
+                        <p style={{ fontSize: '14px', color: '#878787', marginBottom: '20px' }}>Create your first listing to start selling</p>
+                        <button
+                            onClick={() => navigate('/farmer/create-listing')}
+                            style={{
+                                backgroundColor: '#ff9800',
+                                color: '#fff',
+                                padding: '12px 32px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            ➕ Create New Listing
+                        </button>
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gap: '16px' }}>
@@ -172,7 +270,8 @@ export default function FarmerDashboard() {
                                             backgroundColor: '#fff4e6',
                                             padding: '8px 12px',
                                             borderRadius: '2px',
-                                            marginTop: '8px'
+                                            marginTop: '8px',
+                                            marginBottom: '8px'
                                         }}>
                                             <p style={{ fontSize: '11px', color: '#878787', marginBottom: '2px' }}>Highest Bid</p>
                                             <p style={{ fontSize: '16px', fontWeight: '700', color: '#f57c00' }}>
@@ -180,12 +279,141 @@ export default function FarmerDashboard() {
                                             </p>
                                         </div>
                                     )}
+
+                                    {listing.bids_count > 0 && listing.status === 'ACTIVE' && (
+                                        <button
+                                            onClick={() => fetchBids(listing.id)}
+                                            style={{
+                                                backgroundColor: '#2874f0',
+                                                color: '#fff',
+                                                padding: '8px 16px',
+                                                border: 'none',
+                                                borderRadius: '2px',
+                                                fontSize: '13px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                marginTop: '8px',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            View Bids
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Bids Modal */}
+            {viewingBids && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: '#fff',
+                        borderRadius: '2px',
+                        width: '90%',
+                        maxWidth: '600px',
+                        maxHeight: '90vh',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        <div style={{
+                            padding: '16px 24px',
+                            borderBottom: '1px solid #f0f0f0',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Received Bids</h3>
+                            <button
+                                onClick={() => setViewingBids(null)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '24px',
+                                    cursor: 'pointer',
+                                    color: '#878787'
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div style={{ padding: '24px', overflowY: 'auto' }}>
+                            {bids.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: '#878787' }}>No bids found.</p>
+                            ) : (
+                                <div style={{ display: 'grid', gap: '16px' }}>
+                                    {bids.map((bid) => (
+                                        <div key={bid.id} style={{
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: '4px',
+                                            padding: '16px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <div>
+                                                <div style={{ fontSize: '20px', fontWeight: '700', color: '#212121' }}>
+                                                    ₹{bid.amount_per_quintal}
+                                                    <span style={{ fontSize: '14px', fontWeight: '400', color: '#878787' }}>/quintal</span>
+                                                </div>
+                                                <p style={{ fontSize: '13px', color: '#878787', marginTop: '4px' }}>
+                                                    Buyer: {bid.buyer?.username || 'Verified Buyer'}
+                                                </p>
+                                                <p style={{ fontSize: '13px', color: '#878787' }}>
+                                                    Total: ₹{bid.total_amount?.toLocaleString()}
+                                                </p>
+                                            </div>
+
+                                            {bid.status === 'PENDING' ? (
+                                                <button
+                                                    onClick={() => handleAcceptBid(bid.id)}
+                                                    style={{
+                                                        backgroundColor: '#fb641b',
+                                                        color: '#fff',
+                                                        padding: '10px 24px',
+                                                        border: 'none',
+                                                        borderRadius: '2px',
+                                                        fontSize: '14px',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    Accept
+                                                </button>
+                                            ) : (
+                                                <span style={{
+                                                    padding: '6px 12px',
+                                                    backgroundColor: bid.status === 'ACCEPTED' ? '#e6f7e6' : '#ffe6e6',
+                                                    color: bid.status === 'ACCEPTED' ? '#388e3c' : '#d32f2f',
+                                                    borderRadius: '4px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600'
+                                                }}>
+                                                    {bid.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

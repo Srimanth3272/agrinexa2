@@ -66,7 +66,43 @@ export default function BuyerDashboard() {
                         <h1 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', fontStyle: 'italic' }}>AgroBid</h1>
                         <p style={{ color: '#fff', fontSize: '11px', marginTop: '2px', opacity: 0.9 }}>Buyer Dashboard</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <button
+                            onClick={() => navigate('/finance')}
+                            style={{
+                                backgroundColor: '#388e3c',
+                                color: '#fff',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            💰 Finance
+                        </button>
+                        <button
+                            onClick={() => navigate('/logistics')}
+                            style={{
+                                backgroundColor: '#009688',
+                                color: '#fff',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            🚚 Logistics
+                        </button>
                         <span style={{ color: '#fff', fontSize: '14px' }}>👤 {user?.username}</span>
                         <button
                             onClick={handleLogout}

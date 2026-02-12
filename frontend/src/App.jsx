@@ -6,7 +6,12 @@ import Home from './Home';
 import Login from './Login';
 import Register from './Register';
 import FarmerDashboard from './FarmerDashboard';
+import CreateListing from './CreateListing';
 import BuyerDashboard from './BuyerDashboard';
+import AIDemo from './AIDemo';
+import PriceAnalytics from './PriceAnalytics';
+import Finance from './Finance';
+import Logistics from './Logistics';
 
 const queryClient = new QueryClient();
 
@@ -30,10 +35,40 @@ function App() {
             />
 
             <Route
+              path="/farmer/create-listing"
+              element={
+                <ProtectedRoute allowedRoles={['FARMER']}>
+                  <CreateListing />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/buyer/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['BUYER']}>
                   <BuyerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/ai-demo" element={<AIDemo />} />
+            <Route path="/price-analytics" element={<PriceAnalytics />} />
+
+            <Route
+              path="/finance"
+              element={
+                <ProtectedRoute allowedRoles={['FARMER', 'BUYER']}>
+                  <Finance />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/logistics"
+              element={
+                <ProtectedRoute allowedRoles={['FARMER', 'BUYER']}>
+                  <Logistics />
                 </ProtectedRoute>
               }
             />

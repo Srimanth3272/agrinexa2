@@ -1,0 +1,80 @@
+type User @table {
+  username: String!
+  email: String!
+  role: String!
+  createdAt: Timestamp!
+  passwordHash: String
+  firstName: String
+  lastName: String
+  phone: String
+  address: String
+}
+
+type Farm @table {
+  farmName: String!
+  location: String!
+  description: String!
+  createdAt: Timestamp!
+  website: String
+  photoUrl: String
+  user: User!
+}
+
+type Product @table {
+  productName: String!
+  category: String!
+  unitPrice: Float!
+  unitOfMeasure: String!
+  availableQuantity: Int!
+  harvestDate: Date!
+  createdAt: Timestamp!
+  description: String
+  photoUrl: String
+  minimumOrderQuantity: Int
+  farm: Farm!
+}
+
+type Order @table {
+  orderDate: Timestamp!
+  totalAmount: Float!
+  status: String!
+  paymentStatus: String!
+  createdAt: Timestamp!
+  deliveryAddress: String
+  notes: String
+  buyer: User!
+  farm: Farm!
+}
+
+type OrderItem @table {
+  quantity: Int!
+  priceAtOrder: Float!
+  createdAt: Timestamp!
+  order: Order!
+  product: Product!
+}
+
+type Transaction @table {
+  transactionType: String!
+  amount: Float!
+  currency: String!
+  transactionDate: Timestamp!
+  status: String!
+  createdAt: Timestamp!
+  order: Order
+  referenceId: String
+  user: User!
+}
+
+type LogisticsRequest @table {
+  requestDate: Timestamp!
+  pickupLocation: String!
+  deliveryLocation: String!
+  status: String!
+  createdAt: Timestamp!
+  carrierDetails: String
+  trackingNumber: String
+  estimatedDeliveryDate: Date
+  order: Order!
+  requester: User!
+}

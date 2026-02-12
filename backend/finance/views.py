@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Sum, Count, Q
+from decimal import Decimal
 from .models import EscrowTransaction
 from .serializers import EscrowTransactionSerializer
 from market.models import Order
@@ -45,7 +47,7 @@ class EscrowTransactionViewSet(viewsets.ModelViewSet):
         
         # Calculate amount based on transaction type
         if transaction_type == 'TOKEN':
-            amount = order.final_amount * 0.20  # 20% token
+            amount = order.final_amount * Decimal('0.20')  # 20% token
         else:
             amount = order.final_amount
         
@@ -70,3 +72,76 @@ class EscrowTransactionViewSet(viewsets.ModelViewSet):
             EscrowTransactionSerializer(transaction).data,
             status=status.HTTP_201_CREATED
         )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def finance_dashboard(request):
+    """Get finance dashboard statistics for the logged-in user"""
+    user = request.user
+    
+    if user.role == 'FARMER':
+        # Farmer's earnings
+        transactions = EscrowTransaction.objects.filter(
+            order__farmer=user,
+            transaction_type='RELEASE',
+            status='SUCCESS'
+        )
+        
+        total_earnings = transactions.aggregate(
+            total=Sum('amount')
+        )['total'] or Decimal('0.00')
+        
+        pending_releases = EscrowTransaction.objects.filter(
+            order__farmer=user,
+            transaction_type__in=['TOKEN', 'FULL'],
+            status='SUCCESS'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        total_transactions = transactions.count()
+        
+        # Recent transactions
+        recent = transactions.order_by('-created_at')[:10]
+        
+        return Response({
+            'role': 'FARMER',
+            'total_earnings': float(total_earnings),
+            'pending_releases': float(pending_releases),
+            'total_transactions': total_transactions,
+            'recent_transactions': EscrowTransactionSerializer(recent, many=True).data
+        })
+    
+    elif user.role == 'BUYER':
+        # Buyer's payments
+        transactions = EscrowTransaction.objects.filter(
+            order__buyer=user,
+            status='SUCCESS'
+        )
+        
+        total_paid = transactions.aggregate(
+            total=Sum('amount')
+        )['total'] or Decimal('0.00')
+        
+        token_payments = transactions.filter(
+            transaction_type='TOKEN'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        full_payments = transactions.filter(
+            transaction_type='FULL'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        total_transactions = transactions.count()
+        
+        # Recent transactions
+        recent = transactions.order_by('-created_at')[:10]
+        
+        return Response({
+            'role': 'BUYER',
+            'total_paid': float(total_paid),
+            'token_payments': float(token_payments),
+            'full_payments': float(full_payments),
+            'total_transactions': total_transactions,
+            'recent_transactions': EscrowTransactionSerializer(recent, many=True).data
+        })
+    
+    return Response({'error': 'Invalid user role'}, status=status.HTTP_400_BAD_REQUEST)

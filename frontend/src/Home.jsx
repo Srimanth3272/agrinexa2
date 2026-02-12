@@ -86,7 +86,7 @@ export default function Home() {
                 <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>
                     Smart Price Discovery | Controlled Bidding | Secure Escrow Payments
                 </p>
-                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <Link
                         to="/register"
                         style={{
@@ -117,6 +117,22 @@ export default function Home() {
                         }}
                     >
                         Start Buying
+                    </Link>
+                    <Link
+                        to="/price-analytics"
+                        style={{
+                            backgroundColor: '#fb641b',
+                            color: '#fff',
+                            padding: '12px 32px',
+                            borderRadius: '2px',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            fontSize: '16px',
+                            display: 'inline-block',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}
+                    >
+                        📊 View Price Analytics
                     </Link>
                 </div>
             </div>

@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/', include('market.urls')),
     path('api/', include('finance.urls')),
     path('api/', include('logistics.urls')),
+    path('api/ai/', include('ai_assistant.urls')),
     
     # JWT token refresh
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
